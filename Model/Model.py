@@ -1,4 +1,5 @@
 from config import db, ma
+from datetime import datetime
 
 # User class model
 abonnement = db.Table('abonnement',
@@ -127,6 +128,34 @@ class Speciality(db.Model):
         self.name = name
 
 
+class Position(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    position = db.Column(db.String(100), nullable=False)
+    school_id = db.Column(db.Integer, db.ForeignKey(
+        "school.id"), nullable=False)
+
+    def __init__(self,position):
+        self.position = position
+
+
+class PositionSchema(ma.Schema):
+    class Meta:
+        fields = ("id","position")
+
+class Types(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    types = db.Column(db.String(100), nullable=False)
+    school_id = db.Column(db.Integer, db.ForeignKey(
+        "school.id"), nullable=False)
+
+    def __init__(self, types):
+        self.types = types
+
+
+class TypesSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "types")
+
 class SchoolMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(255), nullable=False)
@@ -138,49 +167,48 @@ class SchoolMessage(db.Model):
 
 class School(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    stat = db.Column(db.Integer)
+    stat = db.Column(db.Integer, default=0)
     name = db.Column(db.String(100), nullable=False)
-    tel = db.Column(db.Integer, nullable=False)
+    tel = db.Column(db.String(255), nullable=False)
     logo = db.Column(db.String(255), nullable=False)
     profil = db.Column(db.String(255), nullable=False)
-    position = db.Column(db.String(255), nullable=False)
     password = db.Column(db.String(255), nullable=False)
     status = db.Column(db.String(50), nullable=False)
-    type = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
     outro = db.Column(db.Text, nullable=False)
     sigle = db.Column(db.String(40), nullable=False)
-    pro = db.Column(db.Boolean, nullable=False)
+    pro = db.Column(db.Boolean, nullable=False, default=False)
     multiple = db.Column(db.String(40), nullable=False)
-    create_at = db.Column(db.DateTime, nullable=False)
+    create_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
     filiaire = db.relationship('Filiaire', backref='school', lazy="select")
+    position = db.relationship('Position', backref='school', lazy="select")
+    types = db.relationship('Types', backref='school', lazy="select")
     speciality = db.relationship('Speciality', backref='school', lazy="select")
     pub = db.relationship('Pub', backref="school", lazy="select")
     offer = db.relationship('Offer', backref="school", lazy="select")
 
-    def __init__(self, name, password, tel, description, position, sigle, logo, profil, pro, stat, multiple, outro,
-                 type):
+    def __init__(self, name, password, tel, description, sigle, logo, profil, multiple, outro,status):
         self.name = name
-        self.position = position
         self.password = password
         self.tel = tel
         self.description = description
         self.sigle = sigle
         self.logo = logo
+        self.status = status
         self.profil = profil
-        self.pro = pro
-        self.stat = stat
         self.outro = outro
-        self.type = type
         self.multiple = multiple
+
+    def __repr__(self):
+        return f"<School name={self.sigle} logo={self.logo}>"
 
 
 # Product Schema
 class SchoolSchema(ma.Schema):
     class Meta:
         fields = (
-            "name", "password", "tel", "description", "position", "sigle", "logo", "profil", "pro", "stat", "multiple",
-            "outro", "type")
+           "id", "name", "password", "tel", "description", "sigle", "logo", "profil", "pro","create_at", "stat", "multiple",
+            "outro")
 
 
 # init schema

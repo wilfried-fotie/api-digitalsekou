@@ -1,6 +1,12 @@
-from config import request, db, jsonify, app, api, Resource, bcrypt, abort
+from config import request, db, jsonify, app, api, Resource, bcrypt, abort, os
 from Model.Model import *
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from base64 import b64encode
+import base64
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = os.pardir + '/front/public'
+ALLOWED_EXTENSIONS = ['webp', 'svg', 'png', 'jpg', 'jpeg']
 
 
 class UserRessource(Resource):
@@ -92,7 +98,7 @@ class SchoolRessource(Resource):
         status = request.json['status']
 
         if bcrypt.check_password_hash(user.password, pas) is True:
-            user.username = username
+            user.username = name
             if new_pas == "":
                 pass
             else:
@@ -105,36 +111,74 @@ class SchoolRessource(Resource):
         return "error", 500
 
 
+def allowed_image(filename):
+
+    if not "." in filename:
+        return False
+    
+    ext = filename.rsplit(".", 1)[1]
+
+    if ext in ALLOWED_EXTENSIONS or ext.upper() in ALLOWED_EXTENSIONS :
+        return True
+    else: 
+        print("retour pour tous ça")
+        return False, 500
+
+
+@app.route('/upload', methods=['POST'])
+def fileUpload():
+    image = request.files["file"]
+    filename = secure_filename(image.filename)
+    allowed_image(filename)
+    image.save(os.path.join(UPLOAD_FOLDER, filename))
+    return jsonify(True), 200
+
+
 @app.route("/add-school", methods=['POST'])
-def addUser():
+def addSchool():
+    
     name = request.json['name']
     sigle = request.json['sigle']
-    logo = request.json['logo']
-    position = request.json['position']
+    logo = request.json['logoName']
     status = request.json['status']
     multiple = request.json['multiple']
-    type = request.json['type']
-    profil = request.json['profil']
+    profil = request.json['profilName']
     description = request.json['description']
-    pro = request.json['pro']
-    stat = request.json['stat']
-    create_at = request.json['create_at']
     outro = request.json['outro']
     tel = request.json['tel']
-    pas = request.json['newpassword']
-    sec_pas = bcrypt.generate_password_hash(pas)
-    stat = request.json['status']
+    pas = request.json['password']
+    pas = bcrypt.generate_password_hash(pas)
+    position = request.json['position'] 
+    types = request.json['type']
 
-    new_user = User(username, tel, sec_pas, status, position)
-    verif_user_exist = User.query.filter_by(tel=tel, username=username).first()
+    new_school = School(name=name, password=pas, tel=tel, description=description, sigle=sigle,
+                        logo=logo, profil=profil, multiple=multiple, outro=outro, status=status)
+
+    verif_user_exist = School.query.filter_by(
+        tel=tel, name=name, sigle=sigle).first()
     if verif_user_exist is None:
-        db.session.add(new_user)
+
+        for type in types:
+            new_type = Types(type["value"])
+            db.session.add(new_type)
+            
+            new_school.types.append(new_type)
+
+        for posi in position:
+            new_position = Position(posi["value"])
+            db.session.add(new_position)
+
+            new_school.position.append(new_position)
+        
+        db.session.add(new_school)
+    
         db.session.commit()
+    
     else:
         abort(409, message="La ressource existe déja")
 
-    access_token = create_access_token(identity=entrepise_schema.dump(new_user))
-    return {"id": new_user.id, "username": new_user.username, "token": access_token}, 200
+    access_token = create_access_token(identity=school_schema.dump(new_school))
+    return {"id": new_school.id, "name": new_school.name, "token": access_token}, 200
 
 
 
