@@ -178,8 +178,22 @@ def addSchool():
         abort(409, message="La ressource existe déja")
 
     access_token = create_access_token(identity=school_schema.dump(new_school))
-    return {"id": new_school.id, "name": new_school.name, "token": access_token}, 200
+    return {"id": new_school.id, "sigle": new_school.sigle, "token": access_token}, 200
 
+
+@app.route("/school", methods=['POST'])
+def postSchool():
+    username = request.json['username']
+    username = username.upper()
+    print("-----------------------------------------------------" + username)
+    p = request.json['password']
+    school = School.query.filter_by(sigle=username).all()
+    result = schools_schema.dump(school)
+    for res in result:
+        if bcrypt.check_password_hash(res["password"], p) is True:
+            access_token = create_access_token(identity=school_schema.dump(res))
+            return {"id": res["id"], "school": res["sigle"], "schoolToken": access_token}, 200
+    return {"message": "cette école n'existe pas"}, 500
 
 
 
