@@ -109,23 +109,53 @@ class Offer(db.Model):
 
 class Filiaire(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    speciality_id = db.Column(db.Integer, db.ForeignKey("speciality.id"), nullable=False)
+    name = db.Column(db.String(255), nullable=False,unique=True)
+    speciality = db.relationship('Speciality', backref="filiaire", lazy="select")
     school_id = db.Column(db.Integer, db.ForeignKey("school.id"), nullable=False)
 
-    def __init__(self, name, speciality):
+    def __init__(self, name,  school_id=None):
         self.name = name
-        self.speciality = speciality
+        self.school_id = school_id
 
+
+# Product Schema
+class FiliaireSchema(ma.Schema):
+    class Meta:
+        fields = (
+            "id", "name","school_id")
+
+
+# init schema
+filiaire_schema = FiliaireSchema()
+filiaires_schema = FiliaireSchema(many=True)
 
 class Speciality(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    filiaire = db.relationship('Filiaire', backref="speciality", lazy="select")
+    price = db.Column(db.String(255), nullable=False)
+    filiaire_id = db.Column(db.Integer, db.ForeignKey(
+        "filiaire.id"), nullable=False)
+
     school_id = db.Column(db.Integer, db.ForeignKey("school.id"), nullable=False)
 
-    def __init__(self, name):
+    def __init__(self, name,price,filiaire_id=None,school_id=None):
         self.name = name
+        self.price = price
+        self.filiaire_id = filiaire_id
+        self.school_id = school_id
+
+
+# Product Schema
+class SpecialitySchema(ma.Schema):
+    class Meta:
+        fields = (
+            "id", "name","price","filiaire_id","school_id")
+
+
+# init schema
+speciality_schema = SpecialitySchema()
+specialities_schema = SpecialitySchema(many=True)
+
 
 
 class Position(db.Model):
@@ -134,13 +164,20 @@ class Position(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey(
         "school.id"), nullable=False)
 
-    def __init__(self,position):
+    def __init__(self,position,school_id=None):
         self.position = position
+        self.school_id = school_id
 
 
 class PositionSchema(ma.Schema):
     class Meta:
-        fields = ("id","position")
+        fields = (
+            "id", "position", "school_id")
+
+
+position_schema = PositionSchema()
+positions_schema = PositionSchema(many=True)
+
 
 class Types(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -154,15 +191,31 @@ class Types(db.Model):
 
 class TypesSchema(ma.Schema):
     class Meta:
-        fields = ("id", "types")
+        fields = ("id", "types","school_id")
+
+
+type_schema = TypesSchema()
+types_schema = TypesSchema(many=True)
+
+
 
 class SchoolMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    school_id = db.Column(db.Integer, db.ForeignKey("school.id"), nullable=False)
 
     def __init__(self, message):
         self.message = message
+
+
+class SchoolMessageSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "message", "user_id")
+
+
+school_message_schema = SchoolMessageSchema()
+schools_message_schema = SchoolMessageSchema(many=True)
 
 
 class School(db.Model):
@@ -178,6 +231,7 @@ class School(db.Model):
     outro = db.Column(db.Text, nullable=False)
     sigle = db.Column(db.String(40), nullable=False)
     pro = db.Column(db.Boolean, nullable=False, default=False)
+    demande = db.Column(db.Boolean, nullable=False, default=False)
     multiple = db.Column(db.String(40), nullable=False)
     create_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
     filiaire = db.relationship('Filiaire', backref='school', lazy="select")
@@ -186,8 +240,9 @@ class School(db.Model):
     speciality = db.relationship('Speciality', backref='school', lazy="select")
     pub = db.relationship('Pub', backref="school", lazy="select")
     offer = db.relationship('Offer', backref="school", lazy="select")
+    message = db.relationship('SchoolMessage', backref="school", lazy="select")
 
-    def __init__(self, name, password, tel, description, sigle, logo, profil, multiple, outro,status):
+    def __init__(self, name, password, tel, description, sigle, logo, profil, multiple, outro,status,demande=None,pro=None,stat=None):
         self.name = name
         self.password = password
         self.tel = tel
@@ -198,6 +253,9 @@ class School(db.Model):
         self.profil = profil
         self.outro = outro
         self.multiple = multiple
+        self.pro = pro
+        self.demande = demande
+        self.stat = stat
 
     def __repr__(self):
         return f"<School name={self.sigle} logo={self.logo}>"
@@ -207,7 +265,7 @@ class School(db.Model):
 class SchoolSchema(ma.Schema):
     class Meta:
         fields = (
-           "id", "name", "password", "tel", "description", "sigle", "logo", "profil", "pro","create_at", "stat", "multiple",
+           "id", "name", "password", "tel", "description", "sigle", "logo", "profil", "pro","create_at","demande","stat","status", "multiple",
             "outro")
 
 
@@ -226,6 +284,14 @@ class Sudo(db.Model):
         self.name = name
         self.password = password
 
+
+class SudoSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "name","password")
+
+
+sudo_schema = SudoSchema()
+sudos_schema = SudoSchema(many=True)
 
 # db.drop_all()
 # db.create_all()
