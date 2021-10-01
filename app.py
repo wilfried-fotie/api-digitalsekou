@@ -25,8 +25,8 @@ ALLOWED_EXTENSIONS = ['webp', 'svg',"SVG", 'png', 'jpg', 'jpeg',"JPG","PNG","JPE
 def verif_date(date):
     if int(date[0]) >= int(datetime.today().year):
         
-        if int(date[1]) >= int(datetime.today().month) or int(date[0]) >= int(datetime.today().year):
-            if int(date[2].split("T")[0]) >= int(datetime.today().day) or int(date[1]) >= int(datetime.today().month) :
+        if int(date[1]) >= int(datetime.today().month) or int(date[0]) > int(datetime.today().year):
+            if int(date[2].split("T")[0]) >= int(datetime.today().day) or int(date[1]) > int(datetime.today().month) :
                 return True
             else:
                 return False
