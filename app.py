@@ -15,7 +15,7 @@ from flask_jwt_extended import get_jwt
 from flask_jwt_extended import set_access_cookies
 from flask_jwt_extended import unset_jwt_cookies
 
-UPLOAD_FOLDER = os.pardir + '/front/public'
+UPLOAD_FOLDER = os.pardir + '/front/public/Images'
 ALLOWED_EXTENSIONS = ['webp', 'svg',"SVG", 'png', 'jpg', 'jpeg',"JPG","PNG","JPEG","mp4","MP4"]
 
 
@@ -144,7 +144,7 @@ def postUser():
     username = request.json['username']
     p = request.json['password']
     users = User.query.filter_by(
-        username=username.lower().replace(" ", "-")).all()
+        username=username.lower()).all()
     result = users_schema.dump(users)
     for res in result:
         if bcrypt.check_password_hash(res["password"], p) is True:
@@ -414,7 +414,7 @@ def postEntreprise():
     username = request.json['username']
     p = request.json['password']
     users = Entreprise.query.filter_by(
-        username=username.lower().replace(" ", "-")).all()
+        username=username).all()
     result = entreprises_schema.dump(users)
     for res in result:
         if bcrypt.check_password_hash(res["password"], p) is True:
@@ -809,7 +809,7 @@ def addSiteEntreprise():
 @app.route("/school", methods=['POST'])
 def postSchool():
     username = request.json['username']
-    username = username.upper().replace("-", " ")
+    username = username.upper()
     p = request.json['password']
     school = School.query.filter_by(sigle=username).all()
     result = schools_schema.dump(school)
@@ -871,25 +871,27 @@ def getCustomSchoolPosts(id):
 
     return jsonify(result), 200
 
-@app.route("/get-products/<int:id>", methods = ["GET"])
-def getCustomProducts(id):
-    all_users = AddProduct.query.filter_by(proprio = True,entreprise_id=id).all()
 
-    result = addProductsSchema.dump(all_users)
-
-    return jsonify(result), 200
 
 
 @app.route("/get-products/<int:id>", methods=["GET"])
 def getCustomSiteProducts(id):
-    entreprise = Entreprise.query.get(id)
     all_users = AddProduct.query.filter_by(
-        proprio=True, entreprise_id=entreprise).all()
+         entreprise_id=id).all()
 
     result = addProductsSchema.dump(all_users)
 
     return jsonify(result), 200
 
+
+@app.route("/get-site-products/<int:id>", methods=["GET"])
+def getCustomSite2Products(id):
+    all_users = AddProduct.query.filter_by(
+         entreprise_id=id).all()
+
+    result = addProductsSchema.dump(all_users)
+
+    return jsonify(result), 200
 
 @app.route("/get-pubs", methods = ["GET"])
 def getAllPubs():
@@ -935,8 +937,7 @@ def getAllOffers():
 
 @app.route("/get-site-offers/<int:id>", methods = ["GET"])
 def getAllSiteOffers(id):
-    entreprise = Entreprise.query.get(id)
-    all_users = Offer.query.filter_by(entreprise_id=entreprise.id).all()
+    all_users = Offer.query.filter_by(entreprise_id=id).all()
 
     result = offersSchema.dump(all_users)
 
@@ -952,9 +953,9 @@ def getCustomPubs(id):
 
 @app.route("/get-site-pubs/<int:id>", methods = ["GET"])
 def getCustomSitePubs(id):
-    entreprise = Entreprise.query.get(id)
+  
 
-    all_users = Pub.query.filter_by(entreprise_id=entreprise.id).all()
+    all_users = Pub.query.filter_by(entreprise_id=id).all()
 
     result = pubsSchema.dump(all_users)
 
@@ -985,7 +986,7 @@ def addPostEntreprise(id):
     outro = request.json['outro']
     disposition = request.json['disposition']
 
-    post_exist = AddPost.query.filter_by(name=name).first()
+    post_exist = AddPost.query.filter_by(name=name,image=image).first()
 
     if post_exist is None:
         
@@ -1008,7 +1009,7 @@ def addPostSchool(id):
     outro = request.json['outro']
     disposition = request.json['disposition']
 
-    post_exist = AddPost.query.filter_by(name=name).first()
+    post_exist = AddPost.query.filter_by(name=name,description=outro,image=image).first()
 
     if post_exist is None:
         
