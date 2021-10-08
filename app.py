@@ -3,17 +3,18 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from re import UNICODE
-
 from config import request, db, jsonify, app, api, Resource, bcrypt, abort, os
 from Model.Model import *
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from base64 import b64encode
 import base64
 from werkzeug.utils import secure_filename
-
+from botocore.exceptions import ClientError
 from flask_jwt_extended import get_jwt
 from flask_jwt_extended import set_access_cookies
 from flask_jwt_extended import unset_jwt_cookies
+# import boto3
+# import logging
 
 UPLOAD_FOLDER = os.pardir + '/front/public/Images'
 ALLOWED_EXTENSIONS = ['webp', 'svg',"SVG", 'png', 'jpg', 'jpeg',"JPG","PNG","JPEG","mp4","MP4"]
@@ -70,16 +71,19 @@ def allowed_image(filename):
         return False, 500
 
 
+
+
 @app.route('/upload', methods=['POST'])
 def fileUpload():
     image = request.files["file"]
    
     filename = secure_filename(image.filename)
 
-    if filename in os.listdir():
-        return jsonify(True), 200
-    allowed_image(filename)
-    image.save(os.path.join(UPLOAD_FOLDER, filename))
+    
+    if allowed_image(filename):
+
+        image.save(os.path.join(UPLOAD_FOLDER, filename))
+        # s3.upload_file(Filename=filename, Bucket="digitalsekou", Key=filename)
     return jsonify(True), 200
 
 
