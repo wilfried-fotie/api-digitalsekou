@@ -9,12 +9,10 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from base64 import b64encode
 import base64
 from werkzeug.utils import secure_filename
-from botocore.exceptions import ClientError
 from flask_jwt_extended import get_jwt
 from flask_jwt_extended import set_access_cookies
 from flask_jwt_extended import unset_jwt_cookies
-# import boto3
-# import logging
+
 
 UPLOAD_FOLDER = os.pardir + '/front/public/Images'
 ALLOWED_EXTENSIONS = ['webp', 'svg',"SVG", 'png', 'jpg', 'jpeg',"JPG","PNG","JPEG","mp4","MP4"]

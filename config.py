@@ -11,7 +11,6 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 import secret
 import os
-import boto3
 
 
 
