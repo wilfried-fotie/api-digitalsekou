@@ -307,7 +307,7 @@ class EntrepriseRessource(Resource):
     def delete(self,id):
         who = Entreprise.query.get(id)
         
-        pos = positions_entreprise_schema.dump(PositionEntreprise.query.filter_by(entreprise_id = id).all())
+        pos = PositionEntreprise.query.filter_by(entreprise_id = id).all()
         pubs = Pub.query.filter_by(entreprise_id=id).all()
         offers = Offer.query.filter_by(entreprise_id=id).all()
         addPost = AddPost.query.filter_by(entreprise_id=id).all()
@@ -321,8 +321,12 @@ class EntrepriseRessource(Resource):
              for m in messages:
                 db.session.delete(m)
              
+            
              for p in pos:
-                 db.session.delete(p)
+                
+                db.session.delete(p)
+            
+             
              for p2 in pubs:
                  db.session.delete(p2)
              for o in offers:
@@ -531,12 +535,30 @@ class SchoolRessource(Resource):
     def delete(self, id):
         positionsQuery = Position.query.filter_by(school_id = id).all()
         typesQuery = Types.query.filter_by(school_id = id).all()
+        pos = AddPost.query.filter_by(school_id = id).all()
+        spe = Speciality.query.filter_by(school_id = id).all()
+
+
+        messages = SchoolMessage.query.filter_by(
+            school_id= id).all()
+        
+       
+        for m in messages:
+            db.session.delete(m)
+
+        for s in spe:
+            db.session.delete(s)
+             
+
         for p in positionsQuery:
             db.session.delete(p)
         for t in typesQuery:
             db.session.delete(t)
-        school = School.query.filter_by(id=id).first()
-        db.session.delete(school)
+        for p in pos:
+            db.session.delete(p)
+
+        school2 = School.query.get(id)
+        db.session.delete(school2)
         db.session.commit()
 
         
@@ -843,12 +865,20 @@ def getSecSchool(id):
 
 # > Filiaires
 
-# @app.route("/filieres", methods = ["GET"])
-# def getFilieres():
-#     all_users = Filiaire.query.all()
-#     result = filiaires_schema.dump(all_users)
+@app.route("/get-all-post", methods = ["GET"])
+def getEveryPost():
+    all_users = AddPost.query.all()
+    result = addPostsSchema.dump(all_users)
 
-#     return jsonify(result), 200
+    return jsonify(result), 200
+
+@app.route("/get-all-pres", methods = ["GET"])
+def getEveryPres():
+    all_users = AddProduct.query.all()
+    result = addProductsSchema.dump(all_users)
+
+    return jsonify(result), 200
+
 
 
 @app.route("/get-entreprises-posts/<int:id>", methods = ["GET"])

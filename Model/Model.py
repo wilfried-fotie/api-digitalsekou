@@ -9,6 +9,7 @@ abonnement = db.Table('abonnement',
                       )
 
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100))
@@ -19,7 +20,7 @@ class User(db.Model):
         'SchoolMessage', backref="user", lazy="select")
     entrepriseMessage = db.relationship(
         'EntrepriseMessage', backref="user", lazy="select")
-    abonnement = db.relationship('School', secondary=abonnement, lazy='select', backref='abonnement')
+    abonnement = db.relationship('School', secondary=abonnement, lazy='select',cascade='all, delete-orphan', single_parent=True, backref='abonnement')
 
     def __init__(self, username, tel, password, status):
         self.username = username
@@ -427,7 +428,7 @@ class AddPost(db.Model):
 
 class AddPostSchema(ma.Schema):
     class Meta():
-        fields = ("id","image","name","description","disposition","proprio")
+        fields = ("id","image","name","description","disposition","proprio","school_id","entreprise_id")
 
 
 addPostSchema = AddPostSchema()
@@ -458,7 +459,7 @@ class AddProduct(db.Model):
 
 class AddpProductSchema(ma.Schema):
     class Meta():
-        fields = ("id","image","price","name","proprio")
+        fields = ("id","image","price","name","proprio","entreprise_id")
 
 
 addProductSchema = AddpProductSchema()
