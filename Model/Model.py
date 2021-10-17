@@ -4,8 +4,8 @@ from datetime import datetime
 
 # User class model
 abonnement = db.Table('abonnement',
-                      db.Column('user_id', db.Integer, db.ForeignKey('user.id'), nullable=False),
-                      db.Column('school_id', db.Integer, db.ForeignKey('school.id'), nullable=False),
+                      db.Column('user_id', db.Integer, db.ForeignKey('user.id',ondelete='cascade'), nullable=False),
+                      db.Column('school_id', db.Integer, db.ForeignKey('school.id',ondelete='cascade'), nullable=False),
                       )
 
 
@@ -20,7 +20,7 @@ class User(db.Model):
         'SchoolMessage', backref="user", lazy="select")
     entrepriseMessage = db.relationship(
         'EntrepriseMessage', backref="user", lazy="select")
-    abonnement = db.relationship('School', secondary=abonnement, lazy='select',cascade='all, delete-orphan', single_parent=True, backref='abonnement')
+    abonnement = db.relationship('School', secondary=abonnement, lazy='select',cascade='all', single_parent=False, backref='abonnement')
 
     def __init__(self, username, tel, password, status):
         self.username = username
